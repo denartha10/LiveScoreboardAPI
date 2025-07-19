@@ -2,20 +2,26 @@
 
 ## Match Class Design
 
-This initial design for the `Match` class encapsulates all relevant match details including 
-- home and away teams, 
-- their current scores, 
-- and the match start time. 
+The `Match` class is a simple data holder that encapsulates all relevant match details including:
+- home and away teams,
+- their current scores,
+- and the match start time.
 
-I am not sure if the comparable logic should be in the `Match` class, I am going to compare matches in a collection (red black tree) but should it be up to the consumer of the class to implement the comparison logic?
+Previously, the class implemented `Comparable` to allow natural ordering for use in collections like red-black trees. However, this approach tightly coupled comparison logic with data representation, which violates the Single Responsibility Principle and reduces maintainability.
 
-The `Match` class is designed to encapsulate the details of a football match, including the teams involved, their scores, and the time the match started. It implements the `Comparable` interface to allow for natural ordering based on specific criteria, which is useful when storing matches in a collection like a red-black tree.
+### New Design Decision
 
-It implements `Comparable` to support 
-- ordering by total goals scored (descending), 
-- then by recency (more recent matches first), 
-- and finally by team names to break ties, 
+To better adhere to **SOLID principles**, **object-oriented best practices**, and **Clean Code**, comparison logic has now been moved into a separate `DefaultMatchRanking` class. 
 
-ensuring consistent and unique sorting in our collection. Score updates are handled through a dedicated method, keeping the class focused and cohesive for use within a larger scoreboard system.
+## DefaultMatchRanking (Comparator) Class Design:
 
-> I have written some initial tests to validate the functionality of the `Match` class.
+- Keeps the `Match` class focused purely on representing match data.
+- Decouples sorting behavior from the data model, making it reusable and testable.
+- Allows for flexible sorting strategies without modifying the `Match` class or consumer classes.
+
+The custom `DefaultMatchRanking` is designed to order matches by:
+1. Total goals scored (descending),
+2. Match recency (more recent first),
+3. Team names to break ties.
+
+This ensures consistent, unique sorting within collections while preserving clean separation of concerns.
