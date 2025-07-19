@@ -30,14 +30,22 @@ This ensures consistent, unique sorting within collections while preserving clea
 
 ### Scoreboard Class Design
 
-The `Scoreboard` class is responsible for managing a collection of `Match` objects. It provides methods to:
+The `ScoreBoard` class is responsible for managing a collection of `Match` objects. It provides methods to:
 
-- Start new matches, assuming initial scores are zero, and the `Match` objects contain home and away team names, an important aspect as mentioned in edge cases is that all teams are unique in the context of a single competition (like the World Cup) and so no two matches can have the same team playing at the same time.
-- Update scores, ensuring that scores cannot go negative and that updates reflect the current state of the match. This is enforced by the `updateScore` method in the `Match` class.
-- Finish matches, which removes them from the scoreboard. I decided to allow matches to be removed from the scoreboard once they are finished, by a method that takes the `Match` object as a parameter. But also a function of the same name that takes the home and away team names as parameters to allow for easier removal of matches without needing to keep track of the `Match` object itself. This function overloading allows for flexibility in how matches are managed.
-- Retrieve a summary of all matches, sorted by a ranking strategy. This will return a list of `Match` objects sorted according to the `DefaultMatchRanking` comparator, ensuring that the output is consistent with the defined ranking strategy.
+- **Start new matches** (initial scores zero).
 
-This class uses the `DefaultMatchRanking` comparator to sort matches when retrieving summaries, ensuring that the output is always consistent with the defined ranking strategy. Since the scoreboard is a going to be used for live updates the internal data structure is a `TreeSet` which allows for efficient retrieval and sorting of matches. `TreeSet` internally uses a red-black tree, which provides O(log n) time complexity for insertions and deletions, making it suitable for a live sports scoreboard where matches can be frequently added or removed.
+> **Assumption:** All teams are unique within a single competition, so no team can play more than one match at the same time. Attempting to start a match with an active team will throw an error.
+
+- **Update scores**, enforcing non-negative values and reflecting the live state via `Match.updateScore()`.
+- **Finish matches**, removing them so their teams become available again. Overloads accept either a `Match` object or home/away team names for flexibility.
+
+> **Assumption:** The getSummary method mentioned by the brief should be implemented to return a human-readable summary of the current matches, sorted by the injected ranking strategy.
+> for this reason I have also provided a getMatches method to retrieve the matches in their object form for further processing by consuming applications.
+
+- **Retrieve raw matches** via `getMatches()`, returning a list of `Match` models sorted by the injected ranking strategy.
+- **Retrieve a human-readable summary** via `getSummary()`, returning a `List<String>` of lines like `"1. Uruguay 6 - Italy 6"` in rank order.
+
+Internally, `ScoreBoard` uses a `TreeSet<Match>` with a `DefaultMatchRanking` comparator for O(log n) inserts, updates (remove+reinsert), and deletes, ensuring efficient live scoring."```
 
 ## Testing Strategy
 
