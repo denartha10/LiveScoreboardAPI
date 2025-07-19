@@ -16,12 +16,13 @@ package com.sportsradar;
  * <p>All interactions with this class are expected to enforce input validation
  * and maintain match integrity.
  */
-public class Match {
+class Match {
     private final String homeTeam;
     private final String awayTeam;
     private int homeScore;
     private int awayScore;
     private final long startTime;
+
 
     /**
      * Constructs a Match with specified home and away teams.
@@ -30,13 +31,26 @@ public class Match {
      * @param awayTeam the name of the away team
      * @throws IllegalArgumentException if either team name is null, empty, or if both teams are the same
      */
-    public Match(String homeTeam, String awayTeam) {
-        if (homeTeam == null || homeTeam.isEmpty() || awayTeam == null || awayTeam.isEmpty()) {
+    Match(String homeTeam, String awayTeam) {
+        if (homeTeam == null || awayTeam == null) {
             throw new IllegalArgumentException("Teams cannot be null or empty");
         }
+
         if (homeTeam.equals(awayTeam)) {
             throw new IllegalArgumentException("Teams must be distinct");
         }
+
+        homeTeam = homeTeam.trim().replaceAll("\\s+", "");
+        awayTeam = awayTeam.trim().replaceAll("\\s+", "");
+
+        if (homeTeam.isEmpty() || awayTeam.isEmpty()) {
+            throw new IllegalArgumentException("Teams cannot be empty after trimming");
+        }
+
+        if (homeTeam.equals(awayTeam)) {
+            throw new IllegalArgumentException("Teams must be distinct");
+        }
+
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
         this.homeScore = 0;
@@ -44,23 +58,23 @@ public class Match {
         this.startTime = System.currentTimeMillis(); // Capture the start time of the match
     }
 
-    public String getHomeTeam() {
+    String getHomeTeam() {
         return homeTeam;
     }
 
-    public String getAwayTeam() {
+    String getAwayTeam() {
         return awayTeam;
     }
 
-    public int getHomeScore() {
+    int getHomeScore() {
         return homeScore;
     }
 
-    public int getAwayScore() {
+    int getAwayScore() {
         return awayScore;
     }
 
-    public int getTotalScore() {
+    int getTotalScore() {
         return homeScore + awayScore;
     }
 
@@ -69,7 +83,7 @@ public class Match {
      *
      * @return the start time in milliseconds since epoch
      */
-    public long getStartTime() {
+    long getStartTime() {
         return startTime;
     }
 
@@ -79,7 +93,7 @@ public class Match {
      * @param homeScore the new score for the home team
      * @param awayScore the new score for the away team
      */
-    public void updateScore(int homeScore, int awayScore) {
+    void updateScore(int homeScore, int awayScore) {
         if (homeScore < 0 || awayScore < 0) {
             throw new IllegalArgumentException("Scores cannot be negative");
         }
