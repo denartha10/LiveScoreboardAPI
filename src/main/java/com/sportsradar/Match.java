@@ -21,6 +21,7 @@ public class Match {
     private final String awayTeam;
     private int homeScore;
     private int awayScore;
+    private final long startTime;
 
     /**
      * Constructs a Match with specified home and away teams.
@@ -60,6 +61,15 @@ public class Match {
 
     public int getTotalScore() {
         return homeScore + awayScore;
+    }
+
+    /**
+     * Returns the start time of the match.
+     *
+     * @return the start time in milliseconds since epoch
+     */
+    public long getStartTime() {
+        return startTime;
     }
 
     /**
