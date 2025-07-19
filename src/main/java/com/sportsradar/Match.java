@@ -41,6 +41,7 @@ public class Match {
         this.awayTeam = awayTeam;
         this.homeScore = 0;
         this.awayScore = 0;
+        this.startTime = System.currentTimeMillis(); // Capture the start time of the match
     }
 
     public String getHomeTeam() {
