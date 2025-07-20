@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for the {@link Match} class.
- *
  * These tests validate core behaviors of a football match, such as:
  * - Initial score setup
  * - Valid team names
