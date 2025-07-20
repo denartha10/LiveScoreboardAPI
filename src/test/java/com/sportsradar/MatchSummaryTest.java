@@ -29,7 +29,7 @@ class MatchSummaryTest {
     @Test
     void testDisplayStringIsFormattedCorrectly() {
         String expected = "Spain 2 - 1 Brazil";
-        assertEquals(expected, summary.displayString(), "Display string should be formatted as 'HomeTeam HomeScore - AwayScore AwayTeam'");
+        assertEquals(expected, summary.toString(), "Display string should be formatted as 'HomeTeam HomeScore - AwayScore AwayTeam'");
     }
 
     @Test
