@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.Comparator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DefaultMatchRankingTest {
@@ -48,12 +49,8 @@ public class DefaultMatchRankingTest {
         Match match1 = createMatch("Team A", "Team B", 1, 1, fixedStartTime);
         Match match2 = createMatch("Team C", "Team D", 1, 1, fixedStartTime - 1000); // Earlier start time
 
-        assertTrue(ranking.compare(match1, match2) > 0,
-                "Match with earlier start time should come first"
-        );
-        assertTrue(ranking.compare(match2, match1) < 0,
-                "Match with later start time should come after"
-        );
+        assertTrue(ranking.compare(match1, match2) > 0, "Match with earlier start time should come first" );
+        assertTrue(ranking.compare(match2, match1) < 0, "Match with later start time should come after" );
     }
 
     @Test
@@ -64,7 +61,7 @@ public class DefaultMatchRankingTest {
         Match match3 = createMatch("Beta", "Alpha", 1, 1, fixedStartTime);
 
         // Matches with the same teams and scores should be equal
-        assertTrue(ranking.compare(match1, match2) == 0, "Matches with same teams and scores should be equal");
+        assertEquals(0, ranking.compare(match1, match2), "Matches with same teams and scores should be equal");
 
         // Matches with the same teams but different order should be compared alphabetically
         assertTrue(ranking.compare(match1, match3) < 0, "Match with 'Beta' as home team should come after 'Alpha'");

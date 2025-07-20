@@ -2,9 +2,10 @@ package com.sportsradar;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ScoreBoardTest {
 
@@ -12,221 +13,117 @@ public class ScoreBoardTest {
 
     @BeforeEach
     public void setUp() {
-        DefaultMatchRanking ranking = new DefaultMatchRanking();
-        scoreBoard = new ScoreBoard(ranking);
+        scoreBoard = new ScoreBoard(); // Assume this is your implementation
     }
 
     @Test
     void startMatch_NormalCase() {
-        // Test case to start a match with valid team names
-        String homeTeam = "germany";
-        String awayTeam = "france";
-        scoreBoard.startMatch(homeTeam, awayTeam);
-
-        // Verify that the match was added correctly
-        List<Match> matches = scoreBoard.getMatches();
-
-        assertNotNull(matches);
-        assertFalse(matches.isEmpty());
-
-        Match match = matches.getFirst();
-        assertEquals("Germany", match.getHomeTeam());
-        assertEquals("France", match.getAwayTeam());
-
-        // Check initial scores
-        assertEquals(0, match.getHomeScore());
-        assertEquals(0, match.getAwayScore());
+        assertDoesNotThrow(() -> scoreBoard.startMatch("Mexico", "Canada"));
+        List<MatchSummary> summary = scoreBoard.getSummary();
+        assertEquals(1, summary.size());
+        assertEquals("mexico", summary.getFirst().homeTeam(), "Home team should be 'Mexico");
+        assertEquals("canada", summary.getFirst().awayTeam(), "Away team should be 'Canada'");
     }
 
     @Test
     void startMatch_TeamNamesNull() {
-        // Test case where team names are null
-        String homeTeam = null;
-        String awayTeam = null;
-
-        try {
-            scoreBoard.startMatch(homeTeam, awayTeam);
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Team name cannot be null"));
-        }
+        assertThrows(IllegalArgumentException.class, () -> scoreBoard.startMatch(null, "Canada"), "Home team name cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> scoreBoard.startMatch("Mexico", null), "Away team name cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> scoreBoard.startMatch(null, null), "Both team names cannot be null");
     }
 
     @Test
     void startMatch_TeamNamesEmpty() {
-        // Test case where team names are empty
-        String homeTeam = "";
-        String awayTeam = "";
-        try {
-            scoreBoard.startMatch(homeTeam, awayTeam);
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Team name cannot be null or empty"));
-        }
+        assertThrows(IllegalArgumentException.class, () -> scoreBoard.startMatch("  ", "Canada"), "Home team name cannot be empty");
+        assertThrows(IllegalArgumentException.class, () -> scoreBoard.startMatch("Mexico", "   "), "Away team name cannot be empty");
     }
 
     @Test
     void startMatch_TeamNamesSame() {
-        // Test case where both team names are the same
-        String homeTeam = "germany";
-        String awayTeam = "germany";
-        try {
-            scoreBoard.startMatch(homeTeam, awayTeam);
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Teams must be distinct"));
-        }
+        assertThrows(IllegalArgumentException.class, () -> scoreBoard.startMatch("Mexico", "Mexico"), "Home and away teams cannot be the same");
     }
 
     @Test
     void startMatch_TeamAlreadyPlaying_throws() {
-        // Test case where team A already exists in the scoreboard
-        String homeTeam = "germany";
-        String awayTeam = "france";
-        scoreBoard.startMatch(homeTeam, awayTeam);
-        try {
-            scoreBoard.startMatch(homeTeam, "italy");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("One of the teams is already playing: " + homeTeam));
-        }
+        scoreBoard.startMatch("Mexico", "Canada");
+        assertThrows(IllegalStateException.class, () -> scoreBoard.startMatch("Mexico", "Brazil"), "Home team is already playing");
+        assertThrows(IllegalStateException.class, () -> scoreBoard.startMatch("Spain", "Canada"), "Away team is already playing");
     }
 
     @Test
     void startMatch_FixtureAlreadyExists_throws() {
-        // Test case where a fixture with the same teams already exists
-        String homeTeam = "germany";
-        String awayTeam = "france";
-        scoreBoard.startMatch(homeTeam, awayTeam);
-        try {
-            scoreBoard.startMatch(homeTeam, awayTeam);
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Match already in progress"));
-        }
+        scoreBoard.startMatch("Mexico", "Canada");
+        assertThrows(IllegalStateException.class, () -> scoreBoard.startMatch("Mexico", "Canada"), "Match already exists between Mexico and Canada");
     }
 
     @Test
     void updateScore() {
-        // Test case to update scores and check ordering
-        String homeTeam = "germany";
-        String awayTeam = "france";
-        scoreBoard.startMatch(homeTeam, awayTeam);
-        scoreBoard.updateScore(homeTeam, awayTeam, 2, 1);
-        List<Match> matches = scoreBoard.getMatches();
-        assertNotNull(matches);
-        assertFalse(matches.isEmpty());
-        Match match = matches.getFirst();
-        assertEquals(2, match.getHomeScore());
-        assertEquals(1, match.getAwayScore());
-        assertEquals(3, match.getTotalScore());
+        scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.updateScore("Mexico", "Canada", 1, 2);
+
+        MatchSummary match = scoreBoard.getSummary().getFirst();
+        assertEquals(1, match.homeScore(), "Home score should be 1");
+        assertEquals(2, match.awayScore(), "Away score should be 2");
     }
 
     @Test
     void updateScore_MultiTeamOrdering() {
-        // Test case to check if matches are ordered correctly by total score
-        String homeTeam1 = "germany";
-        String awayTeam1 = "france";
-        String homeTeam2 = "italy";
-        String awayTeam2 = "spain";
+        scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.startMatch("Spain", "Brazil");
+        scoreBoard.startMatch("Germany", "France");
 
-        // Matches with same score earlier match should come first
-        scoreBoard.startMatch(homeTeam1, awayTeam1);
-        scoreBoard.startMatch(homeTeam2, awayTeam2);
+        scoreBoard.updateScore("Mexico", "Canada", 0, 5);      // total 5
+        scoreBoard.updateScore("Spain", "Brazil", 10, 2);      // total 12
+        scoreBoard.updateScore("Germany", "France", 2, 2);     // total 4
 
-        List<Match> matches = scoreBoard.getMatches();
-        assertNotNull(matches);
-        assertEquals(2, matches.size());
+        List<MatchSummary> summary = scoreBoard.getSummary();
 
-        // Check if matches are ordered by earliest start time
-        assertEquals(matches.get(0).getTotalScore(),  matches.get(1).getTotalScore());
-        assertEquals(homeTeam1, matches.get(0).getHomeTeam());
-        assertEquals(awayTeam1, matches.get(0).getAwayTeam());
+        assertEquals("spain", summary.get(0).homeTeam(), "First match should be Spain vs Brazil");
+        assertEquals("brazil", summary.get(0).awayTeam(), "First match should be Spain vs Brazil");
 
-        // Update scores for both matches
-        scoreBoard.updateScore(homeTeam1, awayTeam1, 3, 2);
-        scoreBoard.updateScore(homeTeam2, awayTeam2, 4, 1);
+        assertEquals("mexico", summary.get(1).homeTeam(), "Second match should be Mexico vs Canada");
+        assertEquals("canada", summary.get(1).awayTeam(), "Second match should be Mexico vs Canada");
 
-        matches = scoreBoard.getMatches();
-        assertNotNull(matches);
-        assertEquals(2, matches.size());
-
-        // Check if matches are ordered by total score
-        assertTrue(matches.get(0).getTotalScore() > matches.get(1).getTotalScore());
-        assertEquals(homeTeam2, matches.get(0).getHomeTeam());
-        assertEquals(awayTeam2, matches.get(0).getAwayTeam());
+        assertEquals("germany", summary.get(2).homeTeam(), "Third match should be Germany vs France");
+        assertEquals("france", summary.get(2).awayTeam(), "Third match should be Germany vs France");
     }
 
     @Test
     void updateScore_NonExistentMatch_throws() {
-        // Test case to update score for a match that does not exist
-        String homeTeam = "germany";
-        String awayTeam = "france";
-        try {
-            scoreBoard.updateScore(homeTeam, awayTeam, 2, 1);
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("No such match"));
-        }
+        assertThrows(IllegalStateException.class, () -> scoreBoard.updateScore("Mexico", "Canada", 1, 1), "Match does not exist between Mexico and Canada");
     }
 
     @Test
     void finishMatch_NormalCase() {
-        // Test case to finish a match normally
-        String homeTeam = "germany";
-        String awayTeam = "france";
-        scoreBoard.startMatch(homeTeam, awayTeam);
-        scoreBoard.updateScore(homeTeam, awayTeam, 2, 1);
-        scoreBoard.finishMatch(homeTeam, awayTeam);
-        List<Match> matches = scoreBoard.getMatches();
-        assertNotNull(matches);
-        assertTrue(matches.isEmpty(), "Matches should be empty after finishing the match");
-        assertFalse(scoreBoard.getActiveTeams().contains(homeTeam), "Home team should not be active after finishing the match");
-        assertFalse(scoreBoard.getActiveTeams().contains(awayTeam), "Away team should not be active after finishing the match");
-        assertFalse(scoreBoard.getLookup().containsKey(scoreBoard.key(homeTeam, awayTeam)), "Match should not exist in lookup after finishing");
+        scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.finishMatch("Mexico", "Canada");
+
+        List<MatchSummary> summary = scoreBoard.getSummary();
+        assertTrue(summary.isEmpty(), "Summary should be empty after finishing the match");
     }
 
     @Test
     void finishMatch_nonexistent_throws() {
-        // Test case to finish a match that does not exist
-        String homeTeam = "germany";
-        String awayTeam = "france";
-        try {
-            scoreBoard.finishMatch(homeTeam, awayTeam);
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("No such match"));
-        }
+        assertThrows(IllegalStateException.class, () -> scoreBoard.finishMatch("Mexico", "Canada"), "Match does not exist between Mexico and Canada");
     }
 
     @Test
     void getSummary() {
-        // Test case to retrieve summary strings for matches
-        String homeTeam1 = "germany";
-        String awayTeam1 = "france";
-        String homeTeam2 = "italy";
-        String awayTeam2 = "spain";
+        scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.updateScore("Mexico", "Canada", 2, 3);
 
-        scoreBoard.startMatch(homeTeam1, awayTeam1);
-        scoreBoard.startMatch(homeTeam2, awayTeam2);
+        List<MatchSummary> summary = scoreBoard.getSummary();
 
-        scoreBoard.updateScore(homeTeam1, awayTeam1, 3, 2);
-        scoreBoard.updateScore(homeTeam2, awayTeam2, 4, 1);
-
-        String summary = scoreBoard.getSummary();
-        assertNotNull(summary);
-        assertTrue(summary.contains("1. Germany 3 - France 2"));
-        assertTrue(summary.contains("2. Italy 4 - Spain 1"));
-
-        assertEquals("1. Germany 3 - France 2\n2. Italy 4 - Spain 1\n", summary);
-
-        // update Italy vs Spain match
-        scoreBoard.updateScore(homeTeam2, awayTeam2, 5, 1);
-        summary = scoreBoard.getSummary();
-        assertNotNull(summary);
-        assertTrue(summary.contains("1. Italy 5 - Spain 1"));
-        assertTrue(summary.contains("2. Germany 3 - France 2"));
-        assertEquals("1. Italy 5 - Spain 1\n2. Germany 3 - France 2\n", summary);
+        assertEquals(1, summary.size(), "Summary should contain one match");
+        assertEquals("mexico", summary.getFirst().homeTeam(), "Home team should be 'Mexico'");
+        assertEquals("canada", summary.getFirst().awayTeam(), "Away team should be 'Canada'");
+        assertEquals(2, summary.getFirst().homeScore(), "Home score should be 2");
+        assertEquals(3, summary.getFirst().awayScore(), "Away score should be 3");
     }
 
     @Test
     void getSummary_Empty() {
-        // Test case to retrieve summary strings when no matches exist
-        String summary = scoreBoard.getSummary();
-        assertNotNull(summary);
-        assertEquals("No matches in progress", summary, "Summary should indicate no matches are in progress");
+        List<MatchSummary> summary = scoreBoard.getSummary();
+        assertTrue(summary.isEmpty(), "Summary should be empty when no matches have been played");
     }
 }

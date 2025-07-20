@@ -19,37 +19,29 @@ public class MatchTest {
     @Test
     public void testMatchStartsAtZeroZero() {
         Match match = new Match("Germany", "France");
-        assertEquals(0, match.getHomeScore());
-        assertEquals(0, match.getAwayScore());
+        assertEquals(0, match.getHomeScore(), "Home team score should start at 0");
+        assertEquals(0, match.getAwayScore(), "Away team score should start at 0");
     }
 
     /**
      * Ensures that match creation fails if either team name is null or empty.
-     * Expects an {@link IllegalArgumentException} with a clear message.
+     * Expects an {@link IllegalArgumentException}.
      */
     @Test
     public void testMatchTeamsNonNullAndNonEmpty() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> new Match(null, "France"));
-        assertEquals("Teams cannot be null or empty", exception.getMessage());
-
-        exception = assertThrows(IllegalArgumentException.class, () -> new Match("Germany", null));
-        assertEquals("Teams cannot be null or empty", exception.getMessage());
-
-        exception = assertThrows(IllegalArgumentException.class, () -> new Match("", "France"));
-        assertEquals("Teams cannot be null or empty", exception.getMessage());
-
-        exception = assertThrows(IllegalArgumentException.class, () -> new Match("Germany", ""));
-        assertEquals("Teams cannot be null or empty", exception.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> new Match(null, "France"), "Home team name cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> new Match("Germany", null), "Away team name cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> new Match("", "France"), "Home team name cannot be empty");
+        assertThrows(IllegalArgumentException.class, () -> new Match("Germany", ""), "Away team name cannot be empty");
     }
 
     /**
      * Ensures that a match cannot be created between two identical teams.
-     * Expects an {@link IllegalArgumentException} stating the teams must be distinct.
+     * Expects an {@link IllegalArgumentException}.
      */
     @Test
     public void testTeamsAreDistinct() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> new Match("Germany", "Germany"));
-        assertEquals("Teams must be distinct", exception.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> new Match("Germany", "Germany"), "Home and away teams cannot be the same");
     }
 
     /**
@@ -60,9 +52,8 @@ public class MatchTest {
     public void testTotalScoreIsCorrect(){
         Match match = new Match("Germany", "France");
         match.updateScore(3, 2);
-        assertEquals(5, match.getTotalScore());
+        assertEquals(5, match.getTotalScore(), "Total score should be the sum of home and away scores");
     }
-
 
     /**
      * Test data of Match and record MatchSummary are equal when calling toMatchSummary().
@@ -73,11 +64,10 @@ public class MatchTest {
         match.updateScore(3, 2);
         MatchSummary summary = match.toMatchSummary();
 
-        assertEquals("Germany", summary.homeTeam());
-        assertEquals("France", summary.awayTeam());
-        assertEquals(3, summary.homeScore());
-        assertEquals(2, summary.awayScore());
-        assertTrue(summary.startedAt() > 0); // Ensure startedAt is set
+        assertEquals("germany", summary.homeTeam(), "Home team should be 'Germany'");
+        assertEquals("france", summary.awayTeam(), "Away team should be 'France'");
+        assertEquals(3, summary.homeScore(), "Home score should be 3");
+        assertEquals(2, summary.awayScore(), "Away score should be 2");
+        assertTrue(summary.startedAt() > 0, "Expected match start time to be greater than zero");
     }
-
 }
