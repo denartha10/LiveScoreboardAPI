@@ -2,21 +2,12 @@ package com.sportsradar;
 
 /**
  * Represents a football match between two distinct teams.
- *
- * <p>This class is responsible for:
- * <ul>
- *   <li>Storing the names of the home and away teams</li>
- *   <li>Tracking each team's score</li>
- *   <li>Ensuring valid team names (non-null, non-empty, and distinct)</li>
- *   <li>Providing the ability to update and retrieve scores</li>
- *   <li>Calculating the total score of the match</li>
- *   <li>Adding a compare method to compare matches based on team names (for now)</li>
- * </ul>
- *
- * <p>All interactions with this class are expected to enforce input validation
- * and maintain match integrity.
  */
 class Match {
+    /**
+     * The name of the home team, normalized to lowercase and trimmed of whitespace.
+     * This field is immutable after construction.
+     */
     private final String homeTeam;
     private final String awayTeam;
     private int homeScore;
@@ -51,8 +42,8 @@ class Match {
             throw new IllegalArgumentException("Teams must be distinct");
         }
 
-        this.homeTeam = homeTeam;
-        this.awayTeam = awayTeam;
+        this.homeTeam = homeTeam.toLowerCase();
+        this.awayTeam = awayTeam.toLowerCase();
         this.homeScore = 0;
         this.awayScore = 0;
         this.startTime = System.currentTimeMillis(); // Capture the start time of the match
