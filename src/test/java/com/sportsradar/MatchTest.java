@@ -63,4 +63,22 @@ public class MatchTest {
         match.updateScore(3, 2);
         assertEquals(5, match.getTotalScore());
     }
+
+
+    /**
+     * Test data of Match and record MatchSummary are equal when calling toMatchSummary().
+     */
+    @Test
+    public void testMatchToMatchSummary() {
+        Match match = new Match("Germany", "France");
+        match.updateScore(3, 2);
+        MatchSummary summary = match.toMatchSummary();
+
+        assertEquals("Germany", summary.homeTeam());
+        assertEquals("France", summary.awayTeam());
+        assertEquals(3, summary.homeScore());
+        assertEquals(2, summary.awayScore());
+        assertTrue(summary.startedAt() > 0); // Ensure startedAt is set
+    }
+
 }
