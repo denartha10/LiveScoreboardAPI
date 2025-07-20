@@ -18,7 +18,15 @@ public record MatchSummary(String homeTeam, String awayTeam, int homeScore, int 
         return titleCase.toString().trim();
     }
 
-    public String displayString() {
-        return String.format("%s %d - %d %s", toTitleCase(homeTeam), homeScore, awayScore, toTitleCase(awayTeam));
+    /**
+     * Constructs a MatchSummary string representation. using java toString() method
+     */
+    @Override
+    public String toString() {
+        try {
+            return String.format("%s %d - %d %s", toTitleCase(homeTeam), homeScore, awayScore, toTitleCase(awayTeam));
+        } catch (Exception e) {
+            return "Error formatting match summary";
+        }
     }
 }
