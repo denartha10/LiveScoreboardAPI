@@ -26,16 +26,6 @@ public class ScoreBoard {
     }
 
     /**
-     * Constructs a ScoreBoard with a custom match-ranking comparator.
-     *
-     * @param ranking Comparator defining match ordering
-     */
-    public ScoreBoard(Comparator<Match> ranking) {
-        this.matches = new TreeSet<>(ranking);
-    }
-
-
-    /**
      * Generates a unique key for a fixture based on home and away team names.
      *
      * @param home  Home team name
