@@ -24,7 +24,7 @@ public record MatchSummary(String homeTeam, String awayTeam, int homeScore, int 
     @Override
     public String toString() {
         try {
-            return String.format("%s %d - %d %s", toTitleCase(homeTeam), homeScore, awayScore, toTitleCase(awayTeam));
+            return String.format("%s %d - %s %d", toTitleCase(homeTeam), homeScore, toTitleCase(awayTeam), awayScore);
         } catch (Exception e) {
             return "Error formatting match summary";
         }
