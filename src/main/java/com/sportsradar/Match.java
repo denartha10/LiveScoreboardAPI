@@ -78,6 +78,11 @@ class Match {
         return homeScore + awayScore;
     }
 
+    // method which builds immutable MatchSummary record
+    MatchSummary toMatchSummary() {
+        return new MatchSummary(homeTeam, awayTeam, homeScore, awayScore, startTime);
+    }
+
     /**
      * Returns the start time of the match.
      *
