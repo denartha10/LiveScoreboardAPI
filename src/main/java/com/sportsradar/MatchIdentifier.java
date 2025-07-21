@@ -6,7 +6,7 @@ import java.util.*;
  * A simple, immutable key for a live match.
  * Normalizes team names by trimming, collapsing whitespace, and lowercasing.
  */
-public record MatchIdentifier(String homeTeam, String awayTeam) {
+record MatchIdentifier(String homeTeam, String awayTeam) {
 
     /**
      * Constructs a MatchIdentifier with normalized team names.
@@ -16,7 +16,7 @@ public record MatchIdentifier(String homeTeam, String awayTeam) {
      * @throws NullPointerException if either team name is null
      * @throws IllegalArgumentException if empty, or if both teams are the same after normalization
      */
-    public MatchIdentifier {
+    MatchIdentifier {
         // Normalize: trim ends, collapse internal whitespace to single spaces, lowercase
         homeTeam = normalize(homeTeam);
         awayTeam = normalize(awayTeam);
