@@ -1,100 +1,152 @@
 # Scoreboard Project
 
-## Class Design and Architecture
+## Contents
 
-### Match Class Design
+- 1. [Guidelines, Key Requirements & Assumptions](#guidelines-key-requirements--assumptions)
+  - 1. [Guidelines](#guidelines)
+  - 2. [Key Requirements](#key-requirements)
+  - 3. [Assumptions](#assumptions)
+- 2. [Testing Strategy](#testing-strategy)
+- 3. [Some Interesting Edge Cases](#some-interesting-edge-cases)
+- 4. [Future Features Not Part of Brief](#future-features-not-part-of-brief)
+- 5. [Class Reference](#class-reference)
+  - 1. [`ScoreBoard` Class](#srcmainjavacomsportsradarscoreboardjava)
+  - 2. [`Match` Class](#srcmainjavacomsportsradarmatchjava)
+  - 3. [`DefaultMatchRanking` Class](#srcmainjavacomsportsradardefaultmatchrankingjava)
+  - 4. [`MatchSummary` Record](#srcmainjavacomsportsradarmatchsummaryjava)
+- 6. [Design Notes](#design-notes)
 
-The `Match` class is a simple data holder that encapsulates all relevant match details including:
+---
 
-* home and away teams,
-* their current scores,
-* the match start time,
-* and a convenience method for creating a summary snapshot.
+## Guidelines, Key Requirements & Assumptions
 
-#### New Design Decision
+### Guidelines
 
-To support a clear separation between data representation and presentation logic, `Match` now provides:
+* Solution must be a simple library exposing a public API for integration into other applications.
+* The solution must not use external storage or databases; instead, it should use in-memory data structures (e.g., `NavigableSet` / `TreeSet`) to store match information.
+* Focus on Object Oriented Programming (OOP) and SOLID principles for clean code practices. Test driven development (TDD) is encouraged.
 
-```java
-public MatchSummary toSummary() {
-  return new MatchSummary(homeTeam, awayTeam, homeScore, awayScore, startedAt);
-}
-```
+---
 
-This allows the `Match` model to remain focused on its own state, while consumers use `MatchSummary` for reporting.
+### Key Requirements
 
-### DefaultMatchRanking (Comparator) Class Design:
+* Create a live football World Cup scoreboard that can track matches, teams, and scores.
+* The scoreboard must allow for:
 
-* Keeps the `Match` class focused purely on representing match data.
-* Decouples sorting behavior from the data model, making it reusable and testable.
-* Allows for flexible sorting strategies without modifying the `Match` class or consumer classes.
+  * Adding new matches with team names.
+  * Updating scores for existing matches.
+  * Finding matches currently being played.
+  * Retrieving a summary of all matches, sorted by total score and start time.
 
-The custom `DefaultMatchRanking` is designed to order matches by:
+---
 
-1. Total goals scored (descending),
-2. Match recency (more recent first),
-3. Team names to break ties.
+### Assumptions
 
-This ensures consistent, unique sorting within collections while preserving clean separation of concerns.
-
-### MatchSummary Class Design
-
-The `MatchSummary` class is an immutable Data Transfer Object (DTO) that captures a snapshot of a `Match` at a point in time. It contains:
-
-* `homeTeam` (String)
-* `awayTeam` (String)
-* `homeScore` (int)
-* `awayScore` (int)
-* `startedAt` (Instant)
-
-It provides read-only getters and a helper for formatting
-
-* **Immutability** is guaranteed by `final` fields and no setters.
-* **Extensibility**: Future fields (e.g. elapsed time) can be added without breaking existing clients.
-
-### Scoreboard Class Design
-
-The `ScoreBoard` class is responsible for managing a collection of `Match` objects. It provides methods to:
-
-* **Start new matches** (initial scores zero).
-
-  > **Assumption:** All teams are unique within a single competition, so no team can play more than one match at the same time. Attempting to start a match with an active team will throw an error.
-
-* **Update scores**, enforcing non-negative values and reflecting the live state via `Match.updateScore()`.
-
-* **Finish matches**, removing them so their teams become available again. Overloads accept either a `Match` object or home/away team names for flexibility.
-
-* **Retrieve raw matches** via `getMatches()`, returning a `List<Match>` sorted by the injected ranking strategy.
-
-* **Retrieve a structured summary** via `getSummary()`, returning a `List<MatchSummary>` sorted by total goals (desc) then most recent start (desc).
-
-  ```java
-  List<MatchSummary> getSummary();
-  ```
-
-  Consumers can then call `displayString()` or their own formatting logic.
-
-Internally, `ScoreBoard` uses a `TreeSet<Match>` with a `DefaultMatchRanking` comparator for O(log n) inserts, updates (remove+reinsert), and deletes, ensuring efficient live scoring.
+* Focus on a single competition (e.g., the World Cup) where each team can appear in only one match at a time.
+* Team names are unique and non-empty.
+* Scores are non-negative integers.
+* Complex match events (e.g., fouls, detailed event history) are out of scope; extension would require updating the `Match` class to track events and enforce score validity.
+* Designed for live updates; `TreeSet` ensures fast insertion and retrieval based on defined ranking logic.
+* Sorting logic is encapsulated in `DefaultMatchRanking` to allow priority changes without modifying core classes.
 
 ## Testing Strategy
 
-The testing strategy for this project includes:
-
-* **Unit Tests**: Each class has dedicated unit tests to verify its functionality in isolation. This includes testing the `Match` class for correct data representation and the `ScoreBoard` class for managing matches and score updates. This includes edge cases such as starting a match with no teams, updating scores to negative values, and ensuring that matches can be added and retrieved correctly.
-
-* **Integration Tests**: Tests that cover the interaction between `Match`, `MatchSummary`, and `ScoreBoard`, ensuring that matches can be added, scores updated, and summaries retrieved correctly.
-
-* **Simulation Tests**: Simulating a live sports scenario where multiple matches are started, scores updated, and summaries retrieved to ensure the system behaves as expected under realistic conditions.
-
-## Future Features Not Part of Brief
-
-In the future I would like to add thread safety to the `Scoreboard` class to allow for concurrent updates and retrievals. This would involve using thread-safe collections or synchronization mechanisms to ensure that match data remains consistent when accessed by multiple threads. Especially importannt since this will likely be the case in a live sports application where multiple users may be updating scores simultaneously.
-
-I would also like to extend the `Match` class to include more detailed match events, such as player statistics, fouls, and other relevant data. This would allow for a more comprehensive representation of the match and enable richer features in the future, like the types seen in Google live sports updates.
+* **Unit Tests**: Validate each class in isolation (e.g., `Match` validation and `ScoreBoard` operations). Cover edge cases like invalid team names and disallowed scores.
+* **Integration Tests**: Verify interactions between `Match`, `MatchSummary`, and `ScoreBoard`, ensuring end-to-end workflow correctness.
+* **Simulation Tests**: Emulate live scenarios with multiple concurrent matches to test performance and correct ordering under realistic loads.
 
 ## Some Interesting Edge Cases
 
-* **Tie-breaking**: If two matches have the same total goals, the more recent match should come first. If they are still tied, the team names will be used to break the tie.
-* **Empty Matches**: The system should handle cases where matches have not yet started or have no goals scored, ensuring they are still represented in the scoreboard.
-* **Scores Update**: Scores should not be able to go negative, and updates should be validated to ensure they reflect the current state of the match. While a score can be reduced, the current implementation does not allow for this, as it we have not added an attribute to track match events or history like referee decisions or penalties that might affect the score after it has been set.
-* **Teams Playing At the Same Time**: This is based on the assumption that this is one competition since it is a "Live Football World Cup Score Board" and in such a competition there is only one of each team and thus no two matches can have the same team playing at the same time. If this were not the case, we would need to add a unique identifier for each match to ensure that matches can be distinguished even if they involve the same teams.
+* **Tie-breaking**: If total goals are equal, the most recently started match appears first; if still tied, alphabetical order of team names applies.
+* **Score Validation**: Scores cannot be negative; updates are only valid if they reflect non-negative integers.
+* **Concurrent Matches**: Under single-competition assumption, no two matches share a team. Otherwise, unique match identifiers would be required.
+
+## Future Features Not Part of Brief
+
+* Detailed event tracking (goals, cards, substitutions).
+* Support for multiple concurrent competitions or friendly matches.
+* Persistence layer integration (e.g., SQL or NoSQL database).
+* Real-time notifications or websocket support for live front-end updates.
+
+## Class Reference
+
+### `src/main/java/com/sportsradar/ScoreBoard.java`
+
+**Overview:**
+Handles live tracking of football World Cup matches. Manages active games, updates scores in real-time, and enforces constraints like preventing duplicate team participation.
+
+**Highlights:**
+
+* Stores matches in a `NavigableSet`, sorted by total goals, start time, and team names.
+* Ensures no duplicate matches and that teams aren't in more than one game simultaneously.
+* Core methods for starting, updating, and finishing matches.
+* Generates match summaries in defined sort order.
+
+**Key Methods:**
+
+* `startMatch(String home, String away)`
+* `updateScore(String home, String away, int homeScore, int awayScore)`
+* `finishMatch(String home, String away)`
+* `getSummary()`
+
+---
+
+### `src/main/java/com/sportsradar/Match.java`
+
+**Overview:**
+Represents a football match between two teams, tracking names, scores, and start time.
+
+**Highlights:**
+
+* Validates inputs: non-null, non-empty, and unique team names.
+* Normalizes names (trimmed, lowercase).
+* Tracks mutable scores and immutable start time.
+* Exposes immutable summaries via [`MatchSummary`](#srcmainjavacomsportsradarmatchsummaryjava).
+* Overrides `equals()` and `hashCode()` based on team identity.
+
+**Key Methods:**
+
+* `updateScore(int homeScore, int awayScore)`
+* `toMatchSummary()`
+* `equals(Object obj)`, `hashCode()`
+
+---
+
+### `src/main/java/com/sportsradar/DefaultMatchRanking.java`
+
+**Overview:**
+Encapsulates match ordering logic, allowing easy adjustments to ranking criteria.
+
+**Sort Criteria:**
+
+1. Higher total score
+2. Earlier start time
+3. Alphabetical order of team names
+
+**Key Method:**
+
+* `compare(Match o1, Match o2)`
+
+---
+
+### `src/main/java/com/sportsradar/MatchSummary.java`
+
+**Overview:**
+An immutable Java `record` summarizing a football match.
+
+**Fields:**
+
+* `homeTeam`, `awayTeam`
+* `homeScore`, `awayScore`
+* `startedAt` (timestamp)
+
+**Highlights:**
+
+* Title-case formatting for team names.
+* Custom `toString()` for readable output.
+
+## Design Notes
+
+* Only `ScoreBoard` and `MatchSummary` are public; other classes are package-private.
+* Emphasis on immutability, clean data models, and encapsulation.
+* Future ranking changes centralized in `DefaultMatchRanking` for minimal impact on core logic.
