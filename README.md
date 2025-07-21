@@ -2,19 +2,21 @@
 
 ## Contents
 
-- 1. [Guidelines, Key Requirements & Assumptions](#guidelines-key-requirements--assumptions)
-  - 1. [Guidelines](#guidelines)
-  - 2. [Key Requirements](#key-requirements)
-  - 3. [Assumptions](#assumptions)
-- 2. [Testing Strategy](#testing-strategy)
-- 3. [Some Interesting Edge Cases](#some-interesting-edge-cases)
-- 4. [Future Features Not Part of Brief](#future-features-not-part-of-brief)
-- 5. [Class Reference](#class-reference)
-  - 1. [`ScoreBoard` Class](#srcmainjavacomsportsradarscoreboardjava)
-  - 2. [`Match` Class](#srcmainjavacomsportsradarmatchjava)
-  - 3. [`DefaultMatchRanking` Class](#srcmainjavacomsportsradardefaultmatchrankingjava)
-  - 4. [`MatchSummary` Record](#srcmainjavacomsportsradarmatchsummaryjava)
-- 6. [Design Notes](#design-notes)
+* 1. [Guidelines, Key Requirements & Assumptions](#guidelines-key-requirements--assumptions)
+
+  * 1) [Guidelines](#guidelines)
+  * 2. [Key Requirements](#key-requirements)
+  * 3. [Assumptions](#assumptions)
+* 2. [Testing Strategy](#testing-strategy)
+* 3. [Some Interesting Edge Cases](#some-interesting-edge-cases)
+* 4. [Future Features Not Part of Brief](#future-features-not-part-of-brief)
+* 5. [Class Reference](#class-reference)
+
+  * 1) [`ScoreBoard` Class](#srcmainjavacomsportsradarscoreboardjava)
+  * 2. [`Match` Class](#srcmainjavacomsportsradarmatchjava)
+  * 3. [`DefaultMatchRanking` Class\`](#srcmainjavacomsportsradardefaultmatchrankingjava)
+  * 4. [`MatchSummary` Record\`](#srcmainjavacomsportsradarmatchsummaryjava)
+* 6. [Design Notes](#design-notes)
 
 ---
 
@@ -61,13 +63,6 @@
 * **Score Validation**: Scores cannot be negative; updates are only valid if they reflect non-negative integers.
 * **Concurrent Matches**: Under single-competition assumption, no two matches share a team. Otherwise, unique match identifiers would be required.
 
-## Future Features Not Part of Brief
-
-* Detailed event tracking (goals, cards, substitutions).
-* Support for multiple concurrent competitions or friendly matches.
-* Persistence layer integration (e.g., SQL or NoSQL database).
-* Real-time notifications or websocket support for live front-end updates.
-
 ## Class Reference
 
 ### `src/main/java/com/sportsradar/ScoreBoard.java`
@@ -85,8 +80,8 @@ Handles live tracking of football World Cup matches. Manages active games, updat
 **Key Methods:**
 
 * `startMatch(String home, String away)`
-* `updateScore(String home, String away, int homeScore, int awayScore)`
-* `finishMatch(String home, String away)`
+* `updateScore(MatchIdentifier id, int homeScore, int awayScore)`
+* `finishMatch(MatchIdentifier id)`
 * `getSummary()`
 
 ---
@@ -98,8 +93,7 @@ Represents a football match between two teams, tracking names, scores, and start
 
 **Highlights:**
 
-* Validates inputs: non-null, non-empty, and unique team names.
-* Normalizes names (trimmed, lowercase).
+* Assumes inputs are validated and normalized by `MatchIdentifier`.
 * Tracks mutable scores and immutable start time.
 * Exposes immutable summaries via [`MatchSummary`](#srcmainjavacomsportsradarmatchsummaryjava).
 * Overrides `equals()` and `hashCode()` based on team identity.
@@ -145,8 +139,26 @@ An immutable Java `record` summarizing a football match.
 * Title-case formatting for team names.
 * Custom `toString()` for readable output.
 
+## Class Reference
+
+### `src/main/java/com/sportsradar/MatchIdentifier.java`
+
+**Overview:**
+Provides an immutable, strongly-typed key for a match between two teams, centralizing all name-validation and normalization logic.
+
+**Highlights:**
+
+* Normalizes team names by trimming leading/trailing whitespace, collapsing internal whitespace to single spaces, and lowercasing.
+* Enforces non-null, non-empty, and distinct home/away team names in one place.
+* Overrides `equals()` and `hashCode()` to allow use as a key in maps and sets.
+
+**Key Methods:**
+
+* `MatchIdentifier(String homeTeam, String awayTeam)` — constructor that performs normalization and validation.
+
 ## Design Notes
 
 * Only `ScoreBoard` and `MatchSummary` are public; other classes are package-private.
 * Emphasis on immutability, clean data models, and encapsulation.
 * Future ranking changes centralized in `DefaultMatchRanking` for minimal impact on core logic.
+* **Strongly‑Typed Identifiers**: Replacing raw home/away string parameters with a `MatchIdentifier` record ensures that all team-name validation, normalization (trim, collapse whitespace, lowercase), and uniqueness checks happen exactly once. This approach makes the API safer, unambiguous, and resilient against typos or inconsistent casing.
