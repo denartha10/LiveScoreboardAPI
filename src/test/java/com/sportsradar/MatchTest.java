@@ -60,7 +60,7 @@ public class MatchTest {
      */
     @Test
     public void testMatchToMatchSummary() {
-        Match match = new Match("Germany", "France");
+        Match match = new Match("germany", "france");
         match.updateScore(3, 2);
         MatchSummary summary = match.toMatchSummary();
 

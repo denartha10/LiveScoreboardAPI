@@ -23,64 +23,31 @@ class Match {
      * @throws IllegalArgumentException if either team name is null, empty, or if both teams are the same
      */
     Match(String homeTeam, String awayTeam) {
-        if (homeTeam == null || awayTeam == null) {
-            throw new IllegalArgumentException("Teams cannot be null or empty");
-        }
-
-        if (homeTeam.equals(awayTeam)) {
-            throw new IllegalArgumentException("Teams must be distinct");
-        }
+        if (homeTeam == null || awayTeam == null) { throw new IllegalArgumentException("Teams cannot be null or empty"); }
+        if (homeTeam.equals(awayTeam)) { throw new IllegalArgumentException("Teams must be distinct"); }
 
         homeTeam = homeTeam.trim().replaceAll("\\s+", "");
         awayTeam = awayTeam.trim().replaceAll("\\s+", "");
 
-        if (homeTeam.isEmpty() || awayTeam.isEmpty()) {
-            throw new IllegalArgumentException("Teams cannot be empty after trimming");
-        }
+        if (homeTeam.isEmpty() || awayTeam.isEmpty()) { throw new IllegalArgumentException("Teams cannot be empty after trimming"); }
+        if (homeTeam.equals(awayTeam)) { throw new IllegalArgumentException("Teams must be distinct"); }
 
-        if (homeTeam.equals(awayTeam)) {
-            throw new IllegalArgumentException("Teams must be distinct");
-        }
-
-        this.homeTeam = homeTeam.toLowerCase();
-        this.awayTeam = awayTeam.toLowerCase();
+        this.homeTeam = homeTeam;
+        this.awayTeam = awayTeam;
         this.homeScore = 0;
         this.awayScore = 0;
         this.startTime = System.currentTimeMillis(); // Capture the start time of the match
     }
 
-    String getHomeTeam() {
-        return homeTeam;
-    }
+    String getHomeTeam() { return homeTeam; }
+    String getAwayTeam() { return awayTeam; }
+    int getHomeScore() { return homeScore; }
+    int getAwayScore() { return awayScore; }
+    int getTotalScore() { return homeScore + awayScore; }
+    long getStartTime() { return startTime; }
 
-    String getAwayTeam() {
-        return awayTeam;
-    }
-
-    int getHomeScore() {
-        return homeScore;
-    }
-
-    int getAwayScore() {
-        return awayScore;
-    }
-
-    int getTotalScore() {
-        return homeScore + awayScore;
-    }
-
-    // method which builds immutable MatchSummary record
     MatchSummary toMatchSummary() {
         return new MatchSummary(homeTeam, awayTeam, homeScore, awayScore, startTime);
-    }
-
-    /**
-     * Returns the start time of the match.
-     *
-     * @return the start time in milliseconds since epoch
-     */
-    long getStartTime() {
-        return startTime;
     }
 
     /**
@@ -95,29 +62,6 @@ class Match {
         }
         this.homeScore = homeScore;
         this.awayScore = awayScore;
-    }
-
-    /**
-     * Compares this match with another based on team names.
-     *
-     * @return a negative integer, zero, or a positive integer as this match is less than,
-     *         equal to, or greater than the specified match
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof Match other)) return false;
-        return homeTeam.equals(other.homeTeam) && awayTeam.equals(other.awayTeam);
-    }
-
-    /**
-     * Returns a hash code value for this match.
-     *
-     * @return a hash code value based on the home and away team names
-     */
-    @Override
-    public int hashCode() {
-        return 31 * homeTeam.hashCode() + awayTeam.hashCode();
     }
 }
 
