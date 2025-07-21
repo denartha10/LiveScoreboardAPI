@@ -2,21 +2,11 @@
 
 ## Contents
 
-* 1. [Guidelines, Key Requirements & Assumptions](#guidelines-key-requirements--assumptions)
-
-  * 1) [Guidelines](#guidelines)
-  * 2. [Key Requirements](#key-requirements)
-  * 3. [Assumptions](#assumptions)
-* 2. [Testing Strategy](#testing-strategy)
-* 3. [Some Interesting Edge Cases](#some-interesting-edge-cases)
-* 4. [Future Features Not Part of Brief](#future-features-not-part-of-brief)
-* 5. [Class Reference](#class-reference)
-
-  * 1) [`ScoreBoard` Class](#srcmainjavacomsportsradarscoreboardjava)
-  * 2. [`Match` Class](#srcmainjavacomsportsradarmatchjava)
-  * 3. [`DefaultMatchRanking` Class\`](#srcmainjavacomsportsradardefaultmatchrankingjava)
-  * 4. [`MatchSummary` Record\`](#srcmainjavacomsportsradarmatchsummaryjava)
-* 6. [Design Notes](#design-notes)
+1. [Guidelines, Key Requirements & Assumptions](#guidelines-key-requirements--assumptions)
+2. [Testing Strategy](#testing-strategy)
+3. [Some Interesting Edge Cases](#some-interesting-edge-cases)
+4. [Class Reference](#class-reference)
+5. [Design Notes](#design-notes)
 
 ---
 
@@ -26,7 +16,7 @@
 
 * Solution must be a simple library exposing a public API for integration into other applications.
 * The solution must not use external storage or databases; instead, it should use in-memory data structures (e.g., `NavigableSet` / `TreeSet`) to store match information.
-* Focus on Object Oriented Programming (OOP) and SOLID principles for clean code practices. Test driven development (TDD) is encouraged.
+* Focus on Object-Oriented Programming (OOP) and SOLID principles for clean code practices. Test driven development (TDD) is encouraged.
 
 ---
 
