@@ -2,7 +2,6 @@ package com.sportsradar;
 
 import java.util.Comparator;
 
-@SuppressWarnings("ReassignedVariable")
 class DefaultMatchRanking implements Comparator<Match> {
     @Override
     public int compare(Match o1, Match o2) {

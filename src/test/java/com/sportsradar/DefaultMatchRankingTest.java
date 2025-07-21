@@ -17,9 +17,10 @@ public class DefaultMatchRankingTest {
         ranking = new DefaultMatchRanking();
     }
 
-    //**
-    // * utility to create a match with a fixed start time
-    // */
+    /**
+     * utility to create a match with a fixed start time
+     * This is useful for testing purposes to ensure
+     */
     private Match createMatch(String homeTeam, String awayTeam, int homeScore, int awayScore, long startTime) {
         Match match = new Match(homeTeam, awayTeam);
         match.updateScore(homeScore, awayScore);
