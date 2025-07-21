@@ -40,12 +40,12 @@
 * Complex match events (e.g., fouls, detailed event history) are out of scope; extension would require updating the `Match` class to track events and enforce score validity.
 * Designed for live updates; `TreeSet` ensures fast insertion and retrieval based on defined ranking logic.
 * Sorting logic is encapsulated in `DefaultMatchRanking` to allow priority changes without modifying core classes.
+* The library is designed to be used in single-threaded environments, assuming no concurrent modifications to the scoreboard. If concurrency is required, additional synchronization mechanisms would be needed. Thread‑safety: In a real‑world live application, we’d need to guard our in‑memory maps and sorted sets against concurrent access. A simple approach would be to make all public methods synchronized, or to wrap our collections in Collections.synchronizedMap and synchronizedSortedSet.
 
 ## Testing Strategy
 
 * **Unit Tests**: Validate each class in isolation (e.g., `Match` validation and `ScoreBoard` operations). Cover edge cases like invalid team names and disallowed scores.
 * **Integration Tests**: Verify interactions between `Match`, `MatchSummary`, and `ScoreBoard`, ensuring end-to-end workflow correctness.
-* **Simulation Tests**: Emulate live scenarios with multiple concurrent matches to test performance and correct ordering under realistic loads.
 
 ## Some Interesting Edge Cases
 
