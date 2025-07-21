@@ -1,7 +1,5 @@
 package com.sportsradar;
 
-// feat: implemented final public API for ScoreBoard and MatchSummary, still need to create some simulation tests for the ScoreBoard class
-
 import java.util.*;
 
 /**
@@ -11,7 +9,7 @@ import java.util.*;
  */
 public class ScoreBoard {
     private final NavigableSet<Match> matches;
-    private final Map<String, Match> lookup = new HashMap<>();
+    private final Map<MatchIdentifier, Match> lookup = new HashMap<>();
     private final Set<String> activeTeams = new HashSet<>();
 
 
@@ -26,95 +24,73 @@ public class ScoreBoard {
     }
 
     /**
-     * Generates a unique key for a fixture based on home and away team names.
-     *
-     * @param home  Home team name
-     * @param away  Away team name
-     * @return      Unique string key
-     */
-    String key(String home, String away) {
-        return home + "#" + away;
-    }
-
-    /**
      * Starts a new match with initial score 0-0.
      *
      * @param home  Home team name
      * @param away  Away team name
-     * @throws IllegalArgumentException if either team is already playing or the match exists
+     * @throws IllegalArgumentException if either team name is null, empty, or if both teams are the same
+     * @throws IllegalStateException if either team is already playing in another match
+     *
+     * @return MatchIdentifier for the started match
      */
-    public void startMatch(String home, String away) {
-        if (home == null || away == null) {
-            throw new IllegalArgumentException("Team names cannot be null");
+    public MatchIdentifier startMatch(String home, String away) {
+        MatchIdentifier id = new MatchIdentifier(home, away);
+
+        if (activeTeams.contains(id.homeTeam()) || activeTeams.contains(id.awayTeam())) {
+            throw new IllegalStateException("One of the teams is already playing: " + (activeTeams.contains(id.homeTeam()) ? id.homeTeam() : id.awayTeam()));
         }
 
-        // Normalise team names for comparison
-        home = home.trim().replaceAll("\\s+", " ");
-        away = away.trim().replaceAll("\\s+", " ");
-        if (home.isEmpty() || away.isEmpty()) {
-            throw new IllegalArgumentException("Team names cannot be empty");
+        Match match = new Match(id.homeTeam(), id.awayTeam());
+        lookup.put(id, match);
+        matches.add(match);
+        activeTeams.add(id.homeTeam());
+        activeTeams.add(id.awayTeam());
+        return id;
+    }
+
+    /**
+     * helper to ensure match is found
+     *
+     * @param id MatchIdentifier of the match to look up
+     * @return Match object if found
+     * @throws NoSuchElementException if no match exists for the given identifier
+     */
+    private Match requireLiveMatch(MatchIdentifier id) {
+        Match match = lookup.get(id);
+        if (match == null) {
+            throw new NoSuchElementException("No match found for id: " + id);
         }
-
-        String k = key(home, away);
-
-        if (lookup.containsKey(k)) { throw new IllegalStateException("Match already in progress"); }
-
-        if (activeTeams.contains(home) || activeTeams.contains(away)) {
-            throw new IllegalStateException( "One of the teams is already playing: " + (activeTeams.contains(home) ? home : away) );
-        }
-
-        Match m = new Match(home, away);
-
-        lookup.put(k, m);
-        matches.add(m);
-        activeTeams.add(home);
-        activeTeams.add(away);
+        return match;
     }
 
     /**
      * Updates the score of an ongoing match.
      *
-     * @param home       Home team name
-     * @param away       Away team name
+     * @param id         MatchIdentifier of the match to update
      * @param homeScore  New home team score
      * @param awayScore  New away team score
      * @throws IllegalStateException if no such match exists
      */
-    public void updateScore(String home, String away, int homeScore, int awayScore) {
-        // Normalise team names for comparison
-        home = home.trim().replaceAll("\\s+", " ");
-        away = away.trim().replaceAll("\\s+", " ");
-
-        Match m = lookup.get(key(home, away));
-
-        if (m == null) {
-            throw new IllegalStateException("No such match");
-        }
-        matches.remove(m);
-        m.updateScore(homeScore, awayScore);
-        matches.add(m);
+    public void updateScore(MatchIdentifier id, int homeScore, int awayScore) {
+        Match match = requireLiveMatch(id);
+        matches.remove(match);
+        match.updateScore(homeScore, awayScore);
+        matches.add(match);
     }
 
     /**
      * Finishes a match and removes it from the scoreboard.
      *
-     * @param home  Home team name
-     * @param away  Away team name
+     * @param id    MatchIdentifier of the match to finish
      * @throws IllegalStateException if no such match exists
      */
-    public void finishMatch(String home, String away) {
-        // Normalise team names for comparison
-        home = home.trim().replaceAll("\\s+", " ");
-        away = away.trim().replaceAll("\\s+", " ");
-
-        String k = key(home, away);
-        Match m = lookup.remove(k);
-        if (m == null) {
-            throw new IllegalStateException("No such match");
-        }
-        matches.remove(m);
-        activeTeams.remove(home);
-        activeTeams.remove(away);
+    public MatchSummary finishMatch(MatchIdentifier id) {
+        Match match = requireLiveMatch(id);
+        matches.remove(match);
+        lookup.remove(id);
+        activeTeams.remove(id.homeTeam());
+        activeTeams.remove(id.awayTeam());
+        return match.toMatchSummary();
     }
 
     /**
