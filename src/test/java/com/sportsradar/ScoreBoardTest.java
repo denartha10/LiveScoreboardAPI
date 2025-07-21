@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,9 +28,9 @@ public class ScoreBoardTest {
 
     @Test
     void startMatch_TeamNamesNull() {
-        assertThrows(IllegalArgumentException.class, () -> scoreBoard.startMatch(null, "Canada"), "Home team name cannot be null");
-        assertThrows(IllegalArgumentException.class, () -> scoreBoard.startMatch("Mexico", null), "Away team name cannot be null");
-        assertThrows(IllegalArgumentException.class, () -> scoreBoard.startMatch(null, null), "Both team names cannot be null");
+        assertThrows(NullPointerException.class, () -> scoreBoard.startMatch(null, "Canada"), "Home team name cannot be null");
+        assertThrows(NullPointerException.class, () -> scoreBoard.startMatch("Mexico", null), "Away team name cannot be null");
+        assertThrows(NullPointerException.class, () -> scoreBoard.startMatch(null, null), "Both team names cannot be null");
     }
 
     @Test
@@ -58,8 +59,8 @@ public class ScoreBoardTest {
 
     @Test
     void updateScore() {
-        scoreBoard.startMatch("Mexico", "Canada");
-        scoreBoard.updateScore("Mexico", "Canada", 1, 2);
+        MatchIdentifier id = scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.updateScore(id, 1, 2);
 
         MatchSummary match = scoreBoard.getSummary().getFirst();
         assertEquals(1, match.homeScore(), "Home score should be 1");
@@ -68,13 +69,13 @@ public class ScoreBoardTest {
 
     @Test
     void updateScore_MultiTeamOrdering() {
-        scoreBoard.startMatch("Mexico", "Canada");
-        scoreBoard.startMatch("Spain", "Brazil");
-        scoreBoard.startMatch("Germany", "France");
+        MatchIdentifier id1 = scoreBoard.startMatch("Mexico", "Canada");
+        MatchIdentifier id2 = scoreBoard.startMatch("Spain", "Brazil");
+        MatchIdentifier id3 = scoreBoard.startMatch("Germany", "France");
 
-        scoreBoard.updateScore("Mexico", "Canada", 0, 5);      // total 5
-        scoreBoard.updateScore("Spain", "Brazil", 10, 2);      // total 12
-        scoreBoard.updateScore("Germany", "France", 2, 2);     // total 4
+        scoreBoard.updateScore(id1, 0, 5);      // total 5
+        scoreBoard.updateScore(id2,10, 2);      // total 12
+        scoreBoard.updateScore(id3, 2, 2);     // total 4
 
         List<MatchSummary> summary = scoreBoard.getSummary();
 
@@ -90,13 +91,15 @@ public class ScoreBoardTest {
 
     @Test
     void updateScore_NonExistentMatch_throws() {
-        assertThrows(IllegalStateException.class, () -> scoreBoard.updateScore("Mexico", "Canada", 1, 1), "Match does not exist between Mexico and Canada");
+        MatchIdentifier id = scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.finishMatch(id);
+        assertThrows(NoSuchElementException.class, () -> scoreBoard.updateScore(id, 1, 1), "Match does not exist between Mexico and Canada");
     }
 
     @Test
     void finishMatch_NormalCase() {
-        scoreBoard.startMatch("Mexico", "Canada");
-        scoreBoard.finishMatch("Mexico", "Canada");
+        MatchIdentifier id = scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.finishMatch(id);
 
         List<MatchSummary> summary = scoreBoard.getSummary();
         assertTrue(summary.isEmpty(), "Summary should be empty after finishing the match");
@@ -104,13 +107,15 @@ public class ScoreBoardTest {
 
     @Test
     void finishMatch_nonexistent_throws() {
-        assertThrows(IllegalStateException.class, () -> scoreBoard.finishMatch("Mexico", "Canada"), "Match does not exist between Mexico and Canada");
+        MatchIdentifier id = scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.finishMatch(id);
+        assertThrows(NoSuchElementException.class, () -> scoreBoard.finishMatch(id), "Match does not exist between Mexico and Canada");
     }
 
     @Test
     void getSummary() {
-        scoreBoard.startMatch("Mexico", "Canada");
-        scoreBoard.updateScore("Mexico", "Canada", 2, 3);
+        MatchIdentifier id = scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.updateScore(id, 2, 3);
 
         List<MatchSummary> summary = scoreBoard.getSummary();
 
