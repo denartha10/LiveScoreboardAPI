@@ -51,7 +51,7 @@
 
 * **Tie-breaking**: If total goals are equal, the most recently started match appears first; if still tied, alphabetical order of team names applies.
 * **Score Validation**: Scores cannot be negative; updates are only valid if they reflect non-negative integers.
-* **Concurrent Matches**: Under single-competition assumption, no two matches share a team. Otherwise, unique match identifiers would be required.
+* **Concurrent Matches**: Under single-competition assumption, no two matches share a team. Otherwise `MatchIdentifier` would require more complex unique identification than just team names.
 
 ## Class Reference
 
